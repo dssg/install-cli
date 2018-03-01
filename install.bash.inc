@@ -1,3 +1,5 @@
+# vi:syntax=sh
+
 #
 # start installation lib
 #
@@ -31,7 +33,14 @@ defn_terse() {
   declare -f $1 | tail -n +3 | head -n -1 | sed 's/^[[:blank:]]*//' | paste -s -d '; '
 }
 
+STARTED=false
+
 require() {
+  $STARTED || {
+    STARTED=true
+    message ${T_FCYAN}begin
+  }
+
   set_context $1
   echo
 
@@ -57,6 +66,20 @@ require() {
 
   unset_context
 }
+
+always_install() {
+  return 1
+}
+
+finish() {
+  $STARTED && {
+    echo
+    unset_context
+    message ${T_FCYAN}done
+  }
+}
+
+trap finish EXIT
 
 #
 # end installation lib
