@@ -1,4 +1,9 @@
 # vi:syntax=sh
+#
+# install-cli
+#
+# See install.example for usage.
+#
 
 #
 # start installation lib
