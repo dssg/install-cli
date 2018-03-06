@@ -68,7 +68,7 @@ INSTALL_URL=https://raw.githubusercontent.com/dssg/install-cli/$INSTALL_VERSION/
 # PROJECT=install-cli
 #
 # exists_virtualenv() {
-#   test $(pyenv version-name) == "$PROJECT"
+#   test "$(pyenv version-name)" == "$PROJECT"
 # }
 #
 # install_virtualenv() {
