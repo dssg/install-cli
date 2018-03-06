@@ -59,6 +59,7 @@ require() {
     do
       case $REPLY in
         1)
+          echo -n $T_0  # reset from hack
           $3
           message "${T_FGREEN}installed ✓"
           break;;
