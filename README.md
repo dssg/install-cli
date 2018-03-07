@@ -26,12 +26,12 @@ Simply copy [install.example](install.example) into your project, *e.g.* as an e
 
 The main utility of **install-cli** is the function `require`:
 
-    require REQUIREMENT-NAME CHECK-FN INSTALL-FN [INSTALL-TEXT]
+    require REQUIREMENT-NAME CHECK-FN [INSTALL-FN] [INSTALL-TEXT]
 
 For example, the below will check that `pyenv` is installed, and install it if not:
 
     exists_pyenv() {
-      test $(which pyenv)
+      icli::check_command pyenv
     }
 
     install_pyenv() {
@@ -41,7 +41,7 @@ For example, the below will check that `pyenv` is installed, and install it if n
     require pyenv \
       exists_pyenv \
       install_pyenv \
-      "not found –"
+      --fail-prefix="not found"
 
 An `install` file, extended by the above, will prompt the user with output like the following:
 

@@ -18,7 +18,7 @@
 
 # Update INSTALL_VERSION to require the version of install-cli this
 # script expects
-INSTALL_VERSION=0.0.2
+INSTALL_VERSION=0.0.3
 
 #
 # start bootstrap installation lib
@@ -51,7 +51,7 @@ INSTALL_URL=https://raw.githubusercontent.com/dssg/install-cli/$INSTALL_VERSION/
 # # pyenv
 #
 # exists_pyenv() {
-#   test $(which pyenv)
+#   icli::check_command pyenv
 # }
 #
 # install_pyenv() {
@@ -61,7 +61,7 @@ INSTALL_URL=https://raw.githubusercontent.com/dssg/install-cli/$INSTALL_VERSION/
 # require pyenv \
 #   exists_pyenv \
 #   install_pyenv \
-#   "not found –"
+#   --fail-prefix="not found"
 #
 # # virtualenv
 #
@@ -78,7 +78,7 @@ INSTALL_URL=https://raw.githubusercontent.com/dssg/install-cli/$INSTALL_VERSION/
 # require $PROJECT \
 #   exists_virtualenv \
 #   install_virtualenv \
-#   "project virtual environment not found –"
+#   --fail-prefix="project virtual environment not found"
 #
 # # python libs
 #
@@ -89,8 +89,20 @@ INSTALL_URL=https://raw.githubusercontent.com/dssg/install-cli/$INSTALL_VERSION/
 # # no great way to check that python libs installed;
 # # rather, always fail check and let pip figure it out
 # require lib \
-#   always_install \
+#   icli::always_install \
 #   install_lib
+#
+# # environment variables
+#
+# EXPECTED_ENVVARS="PGHOST PGPORT PGUSER PGDATABASE"
+#
+# check_envvars() {
+#   icli::check_envvars $EXPECTED_ENVVARS
+# }
+#
+# require envvars \
+#   check_envvars \
+#   --fail-prefix="one or more of these environment variables missing ($EXPECTED_ENVVARS)"
 
 #
 # end project check/install
