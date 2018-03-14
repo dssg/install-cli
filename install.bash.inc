@@ -85,22 +85,22 @@ require() {
     case "$1" in
       --$icli_OPTION_PATTERN=*)
         pair=${1:2}  # strip dashes
-	key=${pair%=*}  # split key and value
-	value=${pair#*=}
-	;;
+        key=${pair%=*}  # split key and value
+        value=${pair#*=}
+        ;;
       -*)
         icli::message "${T_FRED}error: require has no such option '$1'"
         return 1
-	;;
+        ;;
       *)
         [ $index -eq ${#icli_REQUIRE_ARGS[@]} ] && {
           icli::message "${T_FRED}error: require received too many arguments"
-	  return 1
+          return 1
         }
-	key=${icli_REQUIRE_ARGS[$index]}
-	value="$1"
-	((index++))
-	;;
+        key=${icli_REQUIRE_ARGS[$index]}
+        value="$1"
+        ((index++))
+        ;;
     esac
     declare -r ${key//-/_}="$value" 2> /dev/null || {
       icli::message "${T_FRED}error: argument '$key' specified multiple times"
@@ -135,12 +135,18 @@ require() {
         1)
           echo -n $T_0  # reset from hack (in case of installer standard output)
           $installer
-	  if [ "$checker" = "icli::always_install" ] || $checker
-	  then
+          local install_success=$?
+          if [ "$checker" != "icli::always_install" ]
+          then
+            $checker
+            install_success=$?
+          fi
+          if [ $install_success -eq 0 ]
+          then
             icli::message "${T_FGREEN}installed ✓"
-	  else
-	    icli::message "${T_FRED}installation failed ✗"
-	  fi
+          else
+            icli::message "${T_FRED}installation failed ✗"
+          fi
           break;;
         2)
           icli::message "${T_FYELLOW}will not install ✗"
