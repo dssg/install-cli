@@ -63,12 +63,29 @@ INSTALL_URL=https://raw.githubusercontent.com/dssg/install-cli/$INSTALL_VERSION/
 #   install_pyenv \
 #   --fail-prefix="not found"
 #
+# # python
+#
+# PY_VERSION=3.6.3
+#
+# exists_python() {
+#   pyenv versions 2> /dev/null | grep -E "^ *${PY_VERSION}$" > /dev/null
+# }
+#
+# install_python() {
+#   pyenv install -s $PY_VERSION
+# }
+#
+# require "python-${PY_VERSION}" \
+#   exists_python \
+#   install_python \
+#   --fail-prefix="v${PY_VERSION} not found"
+#
 # # virtualenv
 #
 # PROJECT=install-cli
 #
 # exists_virtualenv() {
-#   test "$(pyenv version-name)" == "$PROJECT"
+#   test "$(pyenv version-name 2> /dev/null)" == "$PROJECT"
 # }
 #
 # install_virtualenv() {
