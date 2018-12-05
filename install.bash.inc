@@ -45,7 +45,21 @@ icli::message() {
 # misc helpers
 
 icli::defn_terse() {
-  declare -f $1 | tail -n +3 | head -n -1 | sed 's/^[[:blank:]]*//' | paste -s -d ' '
+  # NOTE: We were doing the following, in order to trim the function
+  # declaration's enclosing brackets:
+  #
+  #   declare -f $1 | tail -n +3 | head -n -1 | ...
+  #
+  # However, not all implementations of `head` support negative line
+  # numbers.
+  #
+  # And, rather than any of the crazy sed/awk/etc. that would be
+  # required to reproduce this functionality, we'll just leave the
+  # enclosing brackets now!
+  #
+  # declare -f $1 | tail -n +3 | head -n -1 | sed 's/^[[:blank:]]*//' | paste -s -d ' '
+
+  declare -f $1 | tail -n +2 | sed 's/^[[:blank:]]*//' | sed 's/[[:blank:]]*$//'| paste -s -d ' '
 }
 
 icli::join_by() {
@@ -128,7 +142,7 @@ require() {
   else
     icli::message ${fail_prefix:+$T_FYELLOW$fail_prefix –} "${T_FYELLOW}install?"
     echo -n $T_DIM  # hack the select menu
-    select _yn in "${T_0}${T_FYELLOW}${T_UNDER}yes, install$T_0 $T_DIM{$(icli::defn_terse $installer)}" \
+    select _yn in "${T_0}${T_FYELLOW}${T_UNDER}yes, install$T_0 $T_DIM$(icli::defn_terse $installer)" \
                   "${T_0}${T_FMAGENTA}no, ignore$T_0$T_DIM"
     do
       case $REPLY in
