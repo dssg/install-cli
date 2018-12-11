@@ -59,7 +59,8 @@ icli::defn_terse() {
   #
   # declare -f $1 | tail -n +3 | head -n -1 | sed 's/^[[:blank:]]*//' | paste -s -d ' '
 
-  declare -f $1 | tail -n +2 | sed 's/^[[:blank:]]*//' | sed 's/[[:blank:]]*$//'| paste -s -d ' '
+  # NOTE: POSIX paste requires specification of file ("-" for stdin)
+  declare -f $1 | tail -n +2 | sed 's/^[[:blank:]]*//' | sed 's/[[:blank:]]*$//'| paste -s -d ' ' -
 }
 
 icli::join_by() {
