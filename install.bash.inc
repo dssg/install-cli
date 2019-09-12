@@ -29,7 +29,9 @@ icli::unset_context() {
 readonly T_0=$(tput sgr0)
 
 readonly T_DIM=$(tput dim)
+
 readonly T_UNDER=$(tput smul)
+readonly T_NO_UNDER=$(tput rmul)
 
 readonly T_FCYAN=$(tput setaf 6)
 readonly T_FGREEN=$(tput setaf 2)
@@ -39,6 +41,12 @@ readonly T_FYELLOW=$(tput setaf 3)
 
 icli::message() {
   echo -e "$T_DIM($icli_CONTEXT)$T_0" $@ $T_0
+}
+
+icli::context_message() {
+  icli::set_context "$1"
+  icli::message "$2"
+  icli::unset_context
 }
 
 #
@@ -69,10 +77,47 @@ icli::join_by() {
   echo "$*"
 }
 
+icli::vercomp() {
+  # compare two version specs
+  #
+  # returns:
+  #
+  #   0: identical
+  #   1: first is greater
+  #   2: second is greater
+  #
+  if [[ $1 == $2 ]]; then
+    return 0
+  fi
+
+  local IFS=.
+  local i ver1=($1) ver2=($2)
+
+  # fill empty fields in ver1 with zeros
+  for ((i=${#ver1[@]}; i<${#ver2[@]}; i++)); do
+    ver1[i]=0
+  done
+
+  for ((i=0; i<${#ver1[@]}; i++)); do
+    if [[ -z ${ver2[i]} ]]; then
+      # fill empty fields in ver2 with zeros
+      ver2[i]=0
+    fi
+    if ((10#${ver1[i]} > 10#${ver2[i]})); then
+      return 1
+    fi
+    if ((10#${ver1[i]} < 10#${ver2[i]})); then
+      return 2
+    fi
+  done
+
+  return 0
+}
+
 #
 # require()
 
-readonly icli_REQUIRE_ARGS=(name checker installer fail-prefix)
+readonly icli_REQUIRE_ARGS=(name checker installer fail-prefix fail-message fail-with)
 readonly icli_REQUIRE_OPTIONS=(${icli_REQUIRE_ARGS[@]:2})
 readonly icli_OPTION_PATTERN="@($(icli::join_by "|" ${icli_REQUIRE_OPTIONS[@]}))"
 
@@ -130,6 +175,8 @@ require() {
     return 1
   fi
 
+  local result
+
   # check (and install)
   icli::set_context $name
 
@@ -137,11 +184,21 @@ require() {
   then
     [ -z "$installer" ] && local success_word="check passed" || local success_word="installed"
     icli::message "${T_FGREEN}${success_word} ✓"
+    result=0
   elif [ -z "$installer" ]
   then
-    icli::message ${fail_prefix:+$T_FRED$fail_prefix –} "${T_FRED}check failed ✗"
+    if [ -n "$fail_message" ]; then
+      icli::message "$T_FRED$fail_message"
+    else
+      icli::message ${fail_prefix:+$T_FRED$fail_prefix –} "${T_FRED}check failed ✗"
+    fi
+    result=1
   else
-    icli::message ${fail_prefix:+$T_FYELLOW$fail_prefix –} "${T_FYELLOW}install?"
+    if [ -n "$fail_message" ]; then
+      icli::message "$T_FYELLOW$fail_message"
+    else
+      icli::message ${fail_prefix:+$T_FYELLOW$fail_prefix –} "${T_FYELLOW}install?"
+    fi
     echo -n $T_DIM  # hack the select menu
     select _yn in "${T_0}${T_FYELLOW}${T_UNDER}yes, install$T_0 $T_DIM$(icli::defn_terse $installer)" \
                   "${T_0}${T_FMAGENTA}no, ignore$T_0$T_DIM"
@@ -159,15 +216,23 @@ require() {
           if [ $install_success -eq 0 ]
           then
             icli::message "${T_FGREEN}installed ✓"
+            result=0
           else
             icli::message "${T_FRED}installation failed ✗"
+            result=1
           fi
           break;;
         2)
           icli::message "${T_FYELLOW}will not install ✗"
+          result=1
           break;;
       esac
     done
+  fi
+
+  if [ -n "$fail_with" ] && [ $result = 1 ]; then
+    icli::message "${T_FYELLOW}$fail_with"
+    exit 1
   fi
 
   icli::unset_context
